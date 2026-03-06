@@ -95,30 +95,60 @@ export class EditorPage {
             <fieldset>
               <legend>사진 갤러리 (최대 10개)</legend>
               
+              <!-- 대표 사진 추가 -->
               <div class="form-group">
-                <label>사진 추가</label>
-                <div class="image-upload-area">
+                <label>대표 사진 선택</label>
+                <div class="image-upload-area main-image-upload">
+                  <input type="file" id="main-image-input" accept="image/*" style="display: none;">
+                  <p style="margin: 0 0 0.75rem; font-size: 1.3rem;">⭐</p>
+                  <button type="button" id="btn-upload-main" class="btn btn-secondary">대표 사진 선택</button>
+                  <p style="margin: 0.5rem 0 0; color: #999; font-size: 0.85rem;">또는 사진을 여기에 드래그하세요</p>
+                </div>
+              </div>
+
+              ${this.invitation.mainImage ? `
+                <div class="main-image-section">
+                  <h4>설정된 대표 사진</h4>
+                  <div class="main-image-preview">
+                    <img src="${this.invitation.mainImage}" alt="대표 사진">
+                    <div class="main-image-actions">
+                      <button type="button" class="btn-unset-main-image" title="대표사진 해제">⭐ 해제</button>
+                      <button type="button" class="btn-delete-main-image" title="삭제">× 삭제</button>
+                    </div>
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- 일반 사진 추가 -->
+              <div class="form-group">
+                <label>일반 사진 추가</label>
+                <div class="image-upload-area normal-image-upload">
                   <input type="file" id="image-input" multiple accept="image/*" style="display: none;">
                   <p style="margin: 0 0 0.75rem; font-size: 1.3rem;">📸</p>
-                  <button type="button" id="btn-upload" class="btn btn-secondary">+ 사진 추가</button>
+                  <button type="button" id="btn-upload" class="btn btn-secondary">+ 일반 사진 추가</button>
                   <p style="margin: 0.5rem 0 0; color: #999; font-size: 0.85rem;">또는 사진을 여기에 드래그하세요</p>
-                  <p class="upload-hint">${this.invitation.images.length}/10개 업로드됨</p>
+                  <p class="upload-hint">${this.invitation.images.filter(img => img !== this.invitation.mainImage).length}/10개 업로드됨</p>
                 </div>
               </div>
 
               ${this.invitation.images.length > 0 ? `
                 <div class="uploaded-images">
+                  <h4>업로드된 일반 사진 (${this.invitation.images.filter(img => img !== this.invitation.mainImage).length}개)</h4>
                   <div class="images-grid">
-                    ${this.invitation.images.map((img, idx) => `
-                      <div class="image-item" ${this.invitation.mainImage === img ? 'data-main-image="true"' : ''}>
-                        <img src="${img}" alt="업로드된 사진">
-                        <div class="image-buttons">
-                          <button type="button" class="btn-set-main-image" data-index="${idx}" title="대표사진으로 설정">⭐</button>
-                          <button type="button" class="btn-delete-image" data-index="${idx}" title="삭제">×</button>
-                        </div>
-                        ${this.invitation.mainImage === img ? '<span class="mainimage-badge">대표</span>' : ''}
-                      </div>
-                    `).join('')}
+                    ${this.invitation.images
+                      .filter(img => img !== this.invitation.mainImage)
+                      .map((img, idx) => {
+                        const originalIdx = this.invitation.images.indexOf(img)
+                        return `
+                          <div class="image-item">
+                            <img src="${img}" alt="업로드된 사진">
+                            <div class="image-buttons">
+                              <button type="button" class="btn-set-main-image" data-index="${originalIdx}" title="대표사진으로 설정">⭐</button>
+                              <button type="button" class="btn-delete-image" data-index="${originalIdx}" title="삭제">×</button>
+                            </div>
+                          </div>
+                        `
+                      }).join('')}
                   </div>
                 </div>
               ` : ''}
@@ -166,8 +196,11 @@ export class EditorPage {
         // 이벤트 바인딩
         const form = container.querySelector('#invitation-form') as HTMLFormElement
         const imageInput = container.querySelector('#image-input') as HTMLInputElement
+        const mainImageInput = container.querySelector('#main-image-input') as HTMLInputElement
         const uploadBtn = container.querySelector('#btn-upload') as HTMLButtonElement
-        const uploadArea = container.querySelector('.image-upload-area') as HTMLElement
+        const uploadMainBtn = container.querySelector('#btn-upload-main') as HTMLButtonElement
+        const normalImageUploadArea = container.querySelector('.normal-image-upload') as HTMLElement
+        const mainImageUploadArea = container.querySelector('.main-image-upload') as HTMLElement
 
         container.querySelector('#btn-back')?.addEventListener('click', () => {
             this.options.onCancel()
@@ -177,38 +210,76 @@ export class EditorPage {
             this.options.onCancel()
         })
 
+        // 일반 사진 업로드
         uploadBtn?.addEventListener('click', () => {
             imageInput?.click()
         })
 
-        // 드래그 앤 드롭 이벤트
-        if (uploadArea) {
-            uploadArea.addEventListener('dragover', (e) => {
+        // 대표 사진 업로드
+        uploadMainBtn?.addEventListener('click', () => {
+            mainImageInput?.click()
+        })
+
+        // 드래그 앤 드롭 이벤트 - 일반 사진
+        if (normalImageUploadArea) {
+            normalImageUploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                uploadArea.classList.add('drag-over')
+                normalImageUploadArea.classList.add('drag-over')
             })
 
-            uploadArea.addEventListener('dragenter', (e) => {
+            normalImageUploadArea.addEventListener('dragenter', (e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                uploadArea.classList.add('drag-over')
+                normalImageUploadArea.classList.add('drag-over')
             })
 
-            uploadArea.addEventListener('dragleave', (e) => {
+            normalImageUploadArea.addEventListener('dragleave', (e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                uploadArea.classList.remove('drag-over')
+                normalImageUploadArea.classList.remove('drag-over')
             })
 
-            uploadArea.addEventListener('drop', (e) => {
+            normalImageUploadArea.addEventListener('drop', (e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                uploadArea.classList.remove('drag-over')
+                normalImageUploadArea.classList.remove('drag-over')
 
                 const files = e.dataTransfer?.files
                 if (files) {
-                    this.handleFiles(files, container)
+                    this.handleFiles(files, container, false)
+                }
+            })
+        }
+
+        // 드래그 앤 드롭 이벤트 - 대표 사진
+        if (mainImageUploadArea) {
+            mainImageUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                mainImageUploadArea.classList.add('drag-over')
+            })
+
+            mainImageUploadArea.addEventListener('dragenter', (e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                mainImageUploadArea.classList.add('drag-over')
+            })
+
+            mainImageUploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                mainImageUploadArea.classList.remove('drag-over')
+            })
+
+            mainImageUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                mainImageUploadArea.classList.remove('drag-over')
+
+                const files = e.dataTransfer?.files
+                if (files) {
+                    this.handleFiles(files, container, true)
                 }
             })
         }
@@ -216,7 +287,14 @@ export class EditorPage {
         imageInput?.addEventListener('change', (e) => {
             const files = (e.target as HTMLInputElement).files
             if (files) {
-                this.handleFiles(files, container)
+                this.handleFiles(files, container, false)
+            }
+        })
+
+        mainImageInput?.addEventListener('change', (e) => {
+            const files = (e.target as HTMLInputElement).files
+            if (files) {
+                this.handleFiles(files, container, true)
             }
         })
 
@@ -238,6 +316,24 @@ export class EditorPage {
             })
         })
 
+        container.querySelector('.btn-unset-main-image')?.addEventListener('click', (e) => {
+            e.preventDefault()
+            this.invitation.mainImage = undefined
+            this.render(container)
+        })
+
+        container.querySelector('.btn-delete-main-image')?.addEventListener('click', (e) => {
+            e.preventDefault()
+            if (this.invitation.mainImage) {
+                const index = this.invitation.images.indexOf(this.invitation.mainImage)
+                if (index > -1) {
+                    this.invitation.images.splice(index, 1)
+                    this.invitation.mainImage = undefined
+                }
+            }
+            this.render(container)
+        })
+
         container.querySelector('#btn-preview')?.addEventListener('click', () => {
             this.updateInvitation(form)
             this.options.onPreview(this.invitation)
@@ -250,7 +346,7 @@ export class EditorPage {
         })
     }
 
-    private handleFiles(files: FileList, container: HTMLElement): void {
+    private handleFiles(files: FileList, container: HTMLElement, isMainImage: boolean = false): void {
         Array.from(files).forEach(file => {
             // 이미지 파일만 처리
             if (!file.type.startsWith('image/')) {
@@ -258,9 +354,15 @@ export class EditorPage {
                 return
             }
 
-            // 최대 10개 제한
+            // 최대 10개 제한 (대표사진 포함)
             if (this.invitation.images.length >= 10) {
                 alert('최대 10개까지만 업로드할 수 있습니다')
+                return
+            }
+
+            // 대표사진은 1개만, 일반사진은 여러 개
+            if (isMainImage && this.invitation.mainImage) {
+                alert('대표 사진은 1개만 설정할 수 있습니다')
                 return
             }
 
@@ -270,6 +372,10 @@ export class EditorPage {
                 // 이미지 압축
                 this.compressImage(result, (compressedImage) => {
                     this.invitation.images.push(compressedImage)
+                    if (isMainImage) {
+                        // 대표사진으로 설정
+                        this.invitation.mainImage = compressedImage
+                    }
                     this.render(container)
                 })
             }

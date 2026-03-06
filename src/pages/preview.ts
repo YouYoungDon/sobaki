@@ -28,7 +28,8 @@ export class PreviewPage {
         <div class="mobile-frame">
           <div class="mobile-content ${invitation.template}" style="--primary-color: ${invitation.primaryColor}; --secondary-color: ${invitation.secondaryColor};">
             <!-- 헤더 -->
-            <div class="invitation-header">
+            <div class="invitation-header" ${invitation.mainImage ? `style="background-image: url('${invitation.mainImage}');"` : ''}>
+              <div class="header-overlay"></div>
               <div class="header-content">
                 <p class="subtitle">We are getting married</p>
                 <h1>${invitation.groomName} <span>&</span> ${invitation.brideName}</h1>
@@ -37,13 +38,6 @@ export class PreviewPage {
 
             <!-- 메인 콘텐츠 -->
             <div class="invitation-main">
-              <!-- 대표사진 -->
-              ${invitation.mainImage ? `
-                <section class="section-main-image">
-                  <img src="${invitation.mainImage}" alt="대표사진" class="main-image">
-                </section>
-              ` : ''}
-
               <!-- 날짜/시간 -->
               <section class="section-datetime">
                 <div class="datetime-item">
