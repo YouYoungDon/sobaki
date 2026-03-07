@@ -16,6 +16,8 @@ export class PreviewPage {
     const { invitation } = this.options
     const dateObj = new Date(invitation.date)
     const formattedDate = this.formatDate(dateObj)
+    const dayOfMonth = dateObj.getDate()
+    const monthYear = this.formatMonthYear(dateObj)
 
     container.innerHTML = `
       <div class="page preview-page">
@@ -40,19 +42,22 @@ export class PreviewPage {
             <!-- 메인 콘텐츠 -->
             <div class="invitation-main">
               <!-- 날짜/시간 -->
-              <section class="section-datetime">
-                <div class="datetime-item">
-                  <span class="label">날짜</span>
-                  <span class="value">${formattedDate}</span>
+              <section class="section-datetime scroll-reveal">
+                <div class="calendar-date">
+                  <div class="calendar-header">${monthYear}</div>
+                  <div class="calendar-day">
+                    <span class="day-circle">${dayOfMonth}</span>
+                  </div>
+                  <div class="calendar-footer">${this.getDayName(dateObj)}</div>
                 </div>
-                <div class="datetime-item">
+                <div class="datetime-item scroll-reveal-item">
                   <span class="label">시간</span>
                   <span class="value">${invitation.time}</span>
                 </div>
               </section>
 
               <!-- 장소 -->
-              <section class="section-location">
+              <section class="section-location scroll-reveal">
                 <h3>오시는 길</h3>
                 <div class="location-info">
                   <p class="hall-name">${invitation.location}</p>
@@ -62,14 +67,14 @@ export class PreviewPage {
               </section>
 
               <!-- 메시지 -->
-              <section class="section-message">
+              <section class="section-message scroll-reveal">
                 ${invitation.quote ? `<p class="quote-text">"${invitation.quote}"</p>` : ''}
                 <p class="message-text">"${invitation.message}"</p>
               </section>
 
               <!-- 갤러리 (있을 경우) -->
               ${invitation.images.length > 0 ? `
-                <section class="section-gallery">
+                <section class="section-gallery scroll-reveal">
                   <div class="gallery">
                     ${invitation.images.filter(img => img !== invitation.mainImage).map(img => `
                       <img src="${img}" alt="웨딩 사진">
@@ -91,6 +96,34 @@ export class PreviewPage {
     container.querySelector('#btn-back')?.addEventListener('click', () => {
       this.options.onBack()
     })
+
+    // ScrollReveal 애니메이션 초기화
+    this.initScrollReveal(container)
+  }
+
+  private initScrollReveal(container: HTMLElement): void {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed')
+          observer.unobserve(entry.target)
+        }
+      })
+    }, { threshold: 0.1 })
+
+    container.querySelectorAll('.scroll-reveal').forEach(el => {
+      observer.observe(el)
+    })
+  }
+
+  private formatMonthYear(date: Date): string {
+    const months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
+    return `${months[date.getMonth()]} ${date.getFullYear()}`
+  }
+
+  private getDayName(date: Date): string {
+    const days = ['일', '월', '화', '수', '목', '금', '토']
+    return days[date.getDay()] + '요일'
   }
 
   private formatDate(date: Date): string {
