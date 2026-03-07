@@ -28,7 +28,8 @@ export class PreviewPage {
         <div class="mobile-frame">
           <div class="mobile-content ${invitation.template}" style="--primary-color: ${invitation.primaryColor}; --secondary-color: ${invitation.secondaryColor};">
             <!-- 헤더 -->
-            <div class="invitation-header" ${invitation.mainImage ? `style="background-image: url('${invitation.mainImage}');"` : ''}>
+            <div class="invitation-header">
+              ${invitation.mainImage ? `<img class="header-bg" src="${invitation.mainImage}" alt="대표사진" />` : ''}
               <div class="header-overlay"></div>
               <div class="header-content">
                 <p class="subtitle">We are getting married</p>
