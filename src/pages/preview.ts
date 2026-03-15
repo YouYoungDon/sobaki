@@ -1,4 +1,5 @@
 import type { Invitation } from '../types'
+import { StorageManager } from '../storage'
 
 declare global {
   interface Window {
@@ -102,7 +103,26 @@ export class PreviewPage {
                   </div>
                 </section>
               ` : ''}
-
+              <!-- 댓글 -->
+              <section class="section-comments scroll-reveal">
+                <h3>축하 메시지</h3>
+                <div class="comments-list" id="comments-list-${invitation.id}">
+                  ${invitation.comments.map(comment => `
+                    <div class="comment-item" data-comment-id="${comment.id}">
+                      <div class="comment-header">
+                        <span class="comment-author">${comment.author}</span>
+                        <span class="comment-date">${this.formatCommentDate(comment.createdAt)}</span>
+                      </div>
+                      <div class="comment-content">${comment.content}</div>
+                    </div>
+                  `).join('')}
+                </div>
+                <div class="comment-form">
+                  <input type="text" id="comment-author-${invitation.id}" placeholder="이름" class="comment-input">
+                  <textarea id="comment-content-${invitation.id}" placeholder="축하 메시지를 남겨주세요" class="comment-textarea" rows="3"></textarea>
+                  <button id="submit-comment-${invitation.id}" class="btn btn-primary comment-submit">메시지 남기기</button>
+                </div>
+              </section>
               <!-- 푸터 -->
               <section class="section-footer">
                 <p>저희 결혼식에 참석해 주셔서 감사입니다</p>
@@ -124,6 +144,9 @@ export class PreviewPage {
     setTimeout(() => {
       this.initNaverMap(invitation)
     }, 100)
+
+    // 댓글 이벤트 리스너
+    this.initCommentEvents(container, invitation)
   }
 
   private initScrollReveal(container: HTMLElement): void {
@@ -194,6 +217,64 @@ export class PreviewPage {
     
     html += '</div>'
     return html
+  }
+
+  private initCommentEvents(container: HTMLElement, invitation: Invitation): void {
+    const submitBtn = container.querySelector(`#submit-comment-${invitation.id}`) as HTMLButtonElement
+    const authorInput = container.querySelector(`#comment-author-${invitation.id}`) as HTMLInputElement
+    const contentTextarea = container.querySelector(`#comment-content-${invitation.id}`) as HTMLTextAreaElement
+
+    submitBtn?.addEventListener('click', () => {
+      const author = authorInput.value.trim()
+      const content = contentTextarea.value.trim()
+
+      if (!author || !content) {
+        alert('이름과 메시지를 모두 입력해주세요.')
+        return
+      }
+
+      // 댓글 추가
+      StorageManager.addComment(invitation.id, { author: author, content: content })
+
+      // 입력 필드 초기화
+      authorInput.value = ''
+      contentTextarea.value = ''
+
+      // 댓글 목록 업데이트
+      this.updateCommentsList(container, invitation)
+    })
+  }
+
+  private updateCommentsList(container: HTMLElement, invitation: Invitation): void {
+    const commentsList = container.querySelector(`#comments-list-${invitation.id}`)
+    if (commentsList) {
+      commentsList.innerHTML = invitation.comments.map(comment => `
+        <div class="comment-item" data-comment-id="${comment.id}">
+          <div class="comment-header">
+            <span class="comment-author">${comment.author}</span>
+            <span class="comment-date">${this.formatCommentDate(comment.createdAt)}</span>
+          </div>
+          <div class="comment-content">${comment.content}</div>
+        </div>
+      `).join('')
+    }
+  }
+
+  private formatCommentDate(dateString: string): string {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 0) {
+      return '오늘'
+    } else if (diffDays === 1) {
+      return '어제'
+    } else if (diffDays < 7) {
+      return `${diffDays}일 전`
+    } else {
+      return date.toLocaleDateString('ko-KR')
+    }
   }
 
   private initNaverMap(invitation: Invitation): void {

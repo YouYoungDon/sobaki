@@ -48,7 +48,29 @@ export class StorageManager {
       template: 'classic',
       primaryColor: '#d4a574',
       secondaryColor: '#f5f5f5',
-      message: '저희 결혼식에 초대합니다'
+      message: '저희 결혼식에 초대합니다',
+      comments: []
+    }
+  }
+
+  static addComment(invitationId: string, comment: { author: string; content: string }): void {
+    const invitation = this.get(invitationId)
+    if (invitation) {
+      const newComment = {
+        id: Date.now().toString(),
+        ...comment,
+        createdAt: new Date().toISOString()
+      }
+      invitation.comments.push(newComment)
+      this.save(invitation)
+    }
+  }
+
+  static deleteComment(invitationId: string, commentId: string): void {
+    const invitation = this.get(invitationId)
+    if (invitation) {
+      invitation.comments = invitation.comments.filter(c => c.id !== commentId)
+      this.save(invitation)
     }
   }
 }

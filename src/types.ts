@@ -17,6 +17,14 @@ export interface Invitation {
   secondaryColor: string
   message: string
   quote?: string
+  comments: Comment[]
+}
+
+export interface Comment {
+  id: string
+  author: string
+  content: string
+  createdAt: string
 }
 
 export interface BankAccount {
