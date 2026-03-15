@@ -1,4 +1,4 @@
-import type { Invitation } from '../types'
+import type { Invitation, WeddingComment } from '../types'
 import { StorageManager } from '../storage'
 
 declare global {
@@ -14,6 +14,8 @@ interface PreviewPageOptions {
 
 export class PreviewPage {
   private options: PreviewPageOptions
+  private currentPage: number = 1
+  private readonly commentsPerPage: number = 10
 
   constructor(options: PreviewPageOptions) {
     this.options = options
@@ -107,16 +109,13 @@ export class PreviewPage {
               <section class="section-comments scroll-reveal">
                 <h3>축하 메시지</h3>
                 <div class="comments-list" id="comments-list-${invitation.id}">
-                  ${invitation.comments.map(comment => `
-                    <div class="comment-item" data-comment-id="${comment.id}">
-                      <div class="comment-header">
-                        <span class="comment-author">${comment.author}</span>
-                        <span class="comment-date">${this.formatCommentDate(comment.createdAt)}</span>
-                      </div>
-                      <div class="comment-content">${comment.content}</div>
-                    </div>
-                  `).join('')}
+                  ${this.renderCommentsPage(invitation.comments, 1)}
                 </div>
+                ${invitation.comments.length > this.commentsPerPage ? `
+                  <div class="comments-pagination" id="comments-pagination-${invitation.id}">
+                    ${this.renderPagination(invitation.comments.length)}
+                  </div>
+                ` : ''}
                 <div class="comment-form">
                   <input type="text" id="comment-author-${invitation.id}" placeholder="이름" class="comment-input">
                   <textarea id="comment-content-${invitation.id}" placeholder="축하 메시지를 남겨주세요" class="comment-textarea" rows="3"></textarea>
@@ -240,24 +239,55 @@ export class PreviewPage {
       authorInput.value = ''
       contentTextarea.value = ''
 
-      // 댓글 목록 업데이트
-      this.updateCommentsList(container, invitation)
+      // 최신 데이터를 다시 가져와서 업데이트
+      const updatedInvitation = StorageManager.get(invitation.id)
+      if (updatedInvitation) {
+        // 마지막 페이지로 이동 (새 댓글이 보이도록)
+        this.currentPage = Math.ceil(updatedInvitation.comments.length / this.commentsPerPage)
+        this.updateCommentsList(container, updatedInvitation)
+      }
     })
   }
 
-  private updateCommentsList(container: HTMLElement, invitation: Invitation): void {
-    const commentsList = container.querySelector(`#comments-list-${invitation.id}`)
-    if (commentsList) {
-      commentsList.innerHTML = invitation.comments.map(comment => `
-        <div class="comment-item" data-comment-id="${comment.id}">
-          <div class="comment-header">
-            <span class="comment-author">${comment.author}</span>
-            <span class="comment-date">${this.formatCommentDate(comment.createdAt)}</span>
-          </div>
-          <div class="comment-content">${comment.content}</div>
+  private renderCommentsPage(comments: WeddingComment[], page: number): string {
+    const startIndex = (page - 1) * this.commentsPerPage
+    const endIndex = startIndex + this.commentsPerPage
+    const pageComments = comments.slice(startIndex, endIndex)
+
+    return pageComments.map(comment => `
+      <div class="comment-item" data-comment-id="${comment.id}">
+        <div class="comment-header">
+          <span class="comment-author">${comment.author}</span>
+          <span class="comment-date">${this.formatCommentDate(comment.createdAt)}</span>
         </div>
-      `).join('')
+        <div class="comment-content">${comment.content}</div>
+      </div>
+    `).join('')
+  }
+
+  private renderPagination(totalComments: number): string {
+    const totalPages = Math.ceil(totalComments / this.commentsPerPage)
+    let paginationHtml = ''
+
+    if (totalPages > 1) {
+      // 이전 버튼
+      if (this.currentPage > 1) {
+        paginationHtml += `<button class="pagination-btn" data-page="${this.currentPage - 1}">‹ 이전</button>`
+      }
+
+      // 페이지 번호
+      for (let i = 1; i <= totalPages; i++) {
+        const activeClass = i === this.currentPage ? 'active' : ''
+        paginationHtml += `<button class="pagination-btn ${activeClass}" data-page="${i}">${i}</button>`
+      }
+
+      // 다음 버튼
+      if (this.currentPage < totalPages) {
+        paginationHtml += `<button class="pagination-btn" data-page="${this.currentPage + 1}">다음 ›</button>`
+      }
     }
+
+    return paginationHtml
   }
 
   private formatCommentDate(dateString: string): string {
@@ -275,6 +305,36 @@ export class PreviewPage {
     } else {
       return date.toLocaleDateString('ko-KR')
     }
+  }
+
+  private updateCommentsList(container: HTMLElement, invitation: Invitation): void {
+    const commentsList = container.querySelector(`#comments-list-${invitation.id}`)
+    const paginationContainer = container.querySelector(`#comments-pagination-${invitation.id}`)
+
+    if (commentsList) {
+      commentsList.innerHTML = this.renderCommentsPage(invitation.comments, this.currentPage)
+    }
+
+    if (paginationContainer) {
+      if (invitation.comments.length > this.commentsPerPage) {
+        paginationContainer.innerHTML = this.renderPagination(invitation.comments.length)
+        this.initPaginationEvents(container, invitation)
+      } else {
+        paginationContainer.innerHTML = ''
+      }
+    }
+  }
+
+  private initPaginationEvents(container: HTMLElement, invitation: Invitation): void {
+    const paginationBtns = container.querySelectorAll(`#comments-pagination-${invitation.id} .pagination-btn`)
+
+    paginationBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const page = parseInt((e.target as HTMLElement).getAttribute('data-page') || '1')
+        this.currentPage = page
+        this.updateCommentsList(container, invitation)
+      })
+    })
   }
 
   private initNaverMap(invitation: Invitation): void {

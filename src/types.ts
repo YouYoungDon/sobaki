@@ -17,10 +17,10 @@ export interface Invitation {
   secondaryColor: string
   message: string
   quote?: string
-  comments: Comment[]
+  comments: WeddingComment[]
 }
 
-export interface Comment {
+export interface WeddingComment {
   id: string
   author: string
   content: string

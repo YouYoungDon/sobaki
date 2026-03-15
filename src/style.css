@@ -885,6 +885,41 @@ legend {
   padding: 0.75rem 1.5rem;
 }
 
+/* 댓글 페이징 */
+.comments-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.pagination-btn {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  background: white;
+  color: var(--text-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.pagination-btn:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.pagination-btn.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  font-weight: 600;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .invitation-list {
