@@ -20,8 +20,8 @@ export class ListPage {
     
     container.innerHTML = `
       <div class="page list-page">
-        <header class="app-header">
-          <h1>모바일 청첩장</h1>
+        <header class="app-header main-header">
+          <h1>청첩장만들기</h1>
           <div class="header-buttons">
             <button class="btn-templates" id="btn-templates">🎨 템플릿</button>
             <button class="btn-new" id="btn-new">+ 새로 만들기</button>

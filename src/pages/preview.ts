@@ -15,7 +15,6 @@ export class PreviewPage {
   render(container: HTMLElement): void {
     const { invitation } = this.options
     const dateObj = new Date(invitation.date)
-    const formattedDate = this.formatDate(dateObj)
     const dayOfMonth = dateObj.getDate()
     const monthYear = this.formatMonthYear(dateObj)
 
@@ -45,8 +44,8 @@ export class PreviewPage {
               <section class="section-datetime scroll-reveal">
                 <div class="calendar-date">
                   <div class="calendar-header">${monthYear}</div>
-                  <div class="calendar-day">
-                    <span class="day-circle">${dayOfMonth}</span>
+                  <div class="calendar-grid">
+                    ${this.generateCalendarGrid(dateObj, dayOfMonth)}
                   </div>
                   <div class="calendar-footer">${this.getDayName(dateObj)}</div>
                 </div>
@@ -126,11 +125,48 @@ export class PreviewPage {
     return days[date.getDay()] + '요일'
   }
 
-  private formatDate(date: Date): string {
-    const year = date.getFullYear()
-    const month = date.getMonth() + 1
-    const day = date.getDate()
-    const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()]
-    return `${year}년 ${month}월 ${day}일 (${dayOfWeek})`
+  private generateCalendarGrid(dateObj: Date, weddingDay: number): string {
+    const year = dateObj.getFullYear()
+    const month = dateObj.getMonth()
+    
+    // 해당 월의 첫째 날과 마지막 날
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const totalDays = lastDay.getDate()
+    
+    // 첫째 날의 요일 (0: 일요일, 1: 월요일, ..., 6: 토요일)
+    const startDayOfWeek = firstDay.getDay()
+    
+    // 요일 헤더
+    const weekdays = ['일', '월', '화', '수', '목', '금', '토']
+    let html = '<div class="calendar-weekdays">'
+    weekdays.forEach(day => {
+      html += `<div class="weekday">${day}</div>`
+    })
+    html += '</div>'
+    
+    // 날짜 그리드
+    html += '<div class="calendar-days">'
+    
+    // 빈 칸 채우기 (첫째 날 전까지)
+    for (let i = 0; i < startDayOfWeek; i++) {
+      html += '<div class="calendar-day empty"></div>'
+    }
+    
+    // 날짜 채우기
+    for (let day = 1; day <= totalDays; day++) {
+      const isWeddingDay = day === weddingDay
+      const isToday = new Date().getDate() === day && 
+                     new Date().getMonth() === month && 
+                     new Date().getFullYear() === year
+      const classes = ['calendar-day']
+      if (isWeddingDay) classes.push('wedding-day')
+      if (isToday) classes.push('today')
+      
+      html += `<div class="${classes.join(' ')}">${day}</div>`
+    }
+    
+    html += '</div>'
+    return html
   }
 }
