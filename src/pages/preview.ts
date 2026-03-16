@@ -121,6 +121,14 @@ export class PreviewPage {
                   <textarea id="comment-content-${invitation.id}" placeholder="축하 메시지를 남겨주세요" class="comment-textarea" rows="3"></textarea>
                   <button id="submit-comment-${invitation.id}" class="btn btn-primary comment-submit">메시지 남기기</button>
                 </div>
+                <div class="comment-management" id="comment-management-${invitation.id}" style="display: none;">
+                  <h4>댓글 관리</h4>
+                  <input type="password" id="admin-password-${invitation.id}" placeholder="관리자 비밀번호" class="comment-input">
+                  <button id="verify-admin-${invitation.id}" class="btn btn-secondary">관리자 인증</button>
+                  <div class="admin-controls" id="admin-controls-${invitation.id}" style="display: none;">
+                    <p>댓글을 선택하여 삭제하거나 수정할 수 있습니다.</p>
+                  </div>
+                </div>
               </section>
               <!-- 푸터 -->
               <section class="section-footer">
@@ -222,6 +230,10 @@ export class PreviewPage {
     const submitBtn = container.querySelector(`#submit-comment-${invitation.id}`) as HTMLButtonElement
     const authorInput = container.querySelector(`#comment-author-${invitation.id}`) as HTMLInputElement
     const contentTextarea = container.querySelector(`#comment-content-${invitation.id}`) as HTMLTextAreaElement
+    const verifyAdminBtn = container.querySelector(`#verify-admin-${invitation.id}`) as HTMLButtonElement
+    const adminPasswordInput = container.querySelector(`#admin-password-${invitation.id}`) as HTMLInputElement
+    const managementSection = container.querySelector(`#comment-management-${invitation.id}`) as HTMLElement
+    const adminControls = container.querySelector(`#admin-controls-${invitation.id}`) as HTMLElement
 
     submitBtn?.addEventListener('click', () => {
       const author = authorInput.value.trim()
@@ -247,6 +259,39 @@ export class PreviewPage {
         this.updateCommentsList(container, updatedInvitation)
       }
     })
+
+    // 관리자 인증
+    verifyAdminBtn?.addEventListener('click', () => {
+      const password = adminPasswordInput.value.trim()
+      if (password === 'admin123') { // 간단한 비밀번호 (실제로는 더 안전한 방식 사용 권장)
+        adminControls.style.display = 'block'
+        adminPasswordInput.value = ''
+        this.showCommentActions(container, invitation)
+      } else {
+        alert('잘못된 비밀번호입니다.')
+      }
+    })
+
+    // 댓글 관리 토글
+    const toggleManagement = () => {
+      const isVisible = managementSection.style.display !== 'none'
+      managementSection.style.display = isVisible ? 'none' : 'block'
+      if (!isVisible) {
+        adminControls.style.display = 'none'
+        this.hideCommentActions(container)
+      }
+    }
+
+    // 관리자 섹션 토글 버튼 (간단하게 댓글 섹션 헤더에 추가)
+    const commentsSection = container.querySelector('.section-comments h3')
+    if (commentsSection && !commentsSection.querySelector('.admin-toggle')) {
+      const toggleBtn = document.createElement('button')
+      toggleBtn.className = 'admin-toggle'
+      toggleBtn.textContent = '⚙️ 관리'
+      toggleBtn.style.cssText = 'float: right; font-size: 0.8rem; background: none; border: none; color: #666; cursor: pointer;'
+      toggleBtn.addEventListener('click', toggleManagement)
+      commentsSection.appendChild(toggleBtn)
+    }
   }
 
   private renderCommentsPage(comments: WeddingComment[], page: number): string {
@@ -325,16 +370,123 @@ export class PreviewPage {
     }
   }
 
-  private initPaginationEvents(container: HTMLElement, invitation: Invitation): void {
-    const paginationBtns = container.querySelectorAll(`#comments-pagination-${invitation.id} .pagination-btn`)
+  private showCommentActions(container: HTMLElement, invitation: Invitation): void {
+    const commentItems = container.querySelectorAll('.comment-item')
+    commentItems.forEach(item => {
+      const actions = item.querySelector('.comment-actions') as HTMLElement
+      if (actions) {
+        actions.style.display = 'block'
+      }
+    })
 
-    paginationBtns.forEach(btn => {
+    // 수정/삭제 이벤트 리스너 추가
+    this.initCommentActionEvents(container, invitation)
+  }
+
+  private hideCommentActions(container: HTMLElement): void {
+    const commentItems = container.querySelectorAll('.comment-item')
+    commentItems.forEach(item => {
+      const actions = item.querySelector('.comment-actions') as HTMLElement
+      const editForm = item.querySelector('.comment-edit-form') as HTMLElement
+      if (actions) actions.style.display = 'none'
+      if (editForm) editForm.style.display = 'none'
+    })
+  }
+
+  private initCommentActionEvents(container: HTMLElement, invitation: Invitation): void {
+    // 삭제 버튼 이벤트
+    container.querySelectorAll('.comment-delete-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const page = parseInt((e.target as HTMLElement).getAttribute('data-page') || '1')
-        this.currentPage = page
-        this.updateCommentsList(container, invitation)
+        e.preventDefault()
+        const commentId = (e.target as HTMLElement).getAttribute('data-comment-id')
+        if (commentId && confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+          StorageManager.deleteComment(invitation.id, commentId)
+          const updatedInvitation = StorageManager.get(invitation.id)
+          if (updatedInvitation) {
+            this.updateCommentsList(container, updatedInvitation)
+          }
+        }
       })
     })
+
+    // 수정 버튼 이벤트
+    container.querySelectorAll('.comment-edit-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault()
+        const commentId = (e.target as HTMLElement).getAttribute('data-comment-id')
+        if (commentId) {
+          this.showEditForm(container, commentId)
+        }
+      })
+    })
+
+    // 수정 저장 버튼 이벤트
+    container.querySelectorAll('.comment-save-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault()
+        const commentId = (e.target as HTMLElement).getAttribute('data-comment-id')
+        if (commentId) {
+          this.saveCommentEdit(container, invitation, commentId)
+        }
+      })
+    })
+
+    // 수정 취소 버튼 이벤트
+    container.querySelectorAll('.comment-cancel-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault()
+        const commentId = (e.target as HTMLElement).getAttribute('data-comment-id')
+        if (commentId) {
+          this.hideEditForm(container, commentId)
+        }
+      })
+    })
+  }
+
+  private showEditForm(container: HTMLElement, commentId: string): void {
+    const commentItem = container.querySelector(`[data-comment-id="${commentId}"]`)
+    if (commentItem) {
+      const content = commentItem.querySelector('.comment-content') as HTMLElement
+      const editForm = commentItem.querySelector('.comment-edit-form') as HTMLElement
+
+      if (content && editForm) {
+        content.style.display = 'none'
+        editForm.style.display = 'block'
+      }
+    }
+  }
+
+  private hideEditForm(container: HTMLElement, commentId: string): void {
+    const commentItem = container.querySelector(`[data-comment-id="${commentId}"]`)
+    if (commentItem) {
+      const content = commentItem.querySelector('.comment-content') as HTMLElement
+      const editForm = commentItem.querySelector('.comment-edit-form') as HTMLElement
+
+      if (content && editForm) {
+        content.style.display = 'block'
+        editForm.style.display = 'none'
+      }
+    }
+  }
+
+  private saveCommentEdit(container: HTMLElement, invitation: Invitation, commentId: string): void {
+    const commentItem = container.querySelector(`[data-comment-id="${commentId}"]`)
+    if (commentItem) {
+      const textarea = commentItem.querySelector('.comment-edit-textarea') as HTMLTextAreaElement
+      const newContent = textarea.value.trim()
+
+      if (newContent) {
+        // 댓글 내용 업데이트 (실제로는 StorageManager에 updateComment 메서드 필요)
+        const comment = invitation.comments.find(c => c.id === commentId)
+        if (comment) {
+          comment.content = newContent
+          StorageManager.save(invitation)
+          this.updateCommentsList(container, invitation)
+        }
+      } else {
+        alert('댓글 내용을 입력해주세요.')
+      }
+    }
   }
 
   private initNaverMap(invitation: Invitation): void {

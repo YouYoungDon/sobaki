@@ -880,44 +880,125 @@ legend {
   box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.1);
 }
 
-.comment-submit {
-  align-self: flex-start;
-  padding: 0.75rem 1.5rem;
-}
-
-/* 댓글 페이징 */
-.comments-pagination {
+.comment-actions {
   display: flex;
-  justify-content: center;
-  align-items: center;
   gap: 0.5rem;
-  margin: 1rem 0;
-  padding: 1rem 0;
-  border-top: 1px solid var(--border-color);
+  margin-left: auto;
 }
 
-.pagination-btn {
-  padding: 0.5rem 0.75rem;
+.comment-actions button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
   border: 1px solid var(--border-color);
   background: white;
-  color: var(--text-color);
-  border-radius: 4px;
+  color: #666;
+  border-radius: 3px;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.comment-actions button:hover {
+  background: #f0f0f0;
+}
+
+.comment-delete-btn:hover {
+  background: #ffebee;
+  color: #f44336;
+  border-color: #f44336;
+}
+
+.comment-edit-btn:hover {
+  background: #e3f2fd;
+  color: #2196f3;
+  border-color: #2196f3;
+}
+
+.comment-edit-form {
+  margin-top: 0.5rem;
+}
+
+.comment-edit-textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-family: inherit;
   font-size: 0.9rem;
-  transition: all 0.3s ease;
+  resize: vertical;
+  min-height: 60px;
 }
 
-.pagination-btn:hover {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
+.comment-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  justify-content: flex-end;
 }
 
-.pagination-btn.active {
-  background: var(--primary-color);
+.comment-edit-actions button {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.comment-save-btn {
+  background: #4caf50;
   color: white;
-  border-color: var(--primary-color);
-  font-weight: 600;
+  border-color: #4caf50;
+}
+
+.comment-save-btn:hover {
+  background: #45a049;
+}
+
+.comment-cancel-btn {
+  background: #9e9e9e;
+  color: white;
+  border-color: #9e9e9e;
+}
+
+.comment-cancel-btn:hover {
+  background: #757575;
+}
+
+.comment-management {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.comment-management h4 {
+  margin: 0 0 1rem 0;
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+
+.admin-controls {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
+
+.admin-toggle {
+  float: right;
+  font-size: 0.8rem;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.5rem;
+}
+
+.admin-toggle:hover {
+  color: var(--primary-color);
 }
 
 /* 반응형 디자인 */
