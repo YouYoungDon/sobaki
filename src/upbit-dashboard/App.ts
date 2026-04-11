@@ -18,6 +18,7 @@ interface AnalysisResult {
 export class App {
   private root: HTMLElement
   private marketList?: HTMLElement
+  private searchInput?: HTMLInputElement
   private statusElement?: HTMLElement
   private summaryElement?: HTMLElement
   private chartContainer?: HTMLElement
@@ -26,6 +27,7 @@ export class App {
   private selectedMarketSubtitle?: HTMLElement
   private selectedMarket = DEFAULT_MARKETS[0]
   private markets: Market[] = []
+  private allKrwMarkets: Market[] = []
 
   constructor() {
     const root = document.querySelector<HTMLElement>('#root')
@@ -38,6 +40,7 @@ export class App {
   init(): void {
     this.root.innerHTML = this.getTemplate()
     this.marketList = this.root.querySelector('#market-list') as HTMLElement
+    this.searchInput = this.root.querySelector('#search-input') as HTMLInputElement
     this.statusElement = this.root.querySelector('#status') as HTMLElement
     this.summaryElement = this.root.querySelector('#analysis-summary') as HTMLElement
     this.chartContainer = this.root.querySelector('#chart-container') as HTMLElement
@@ -62,6 +65,7 @@ export class App {
               <h2>KRW 마켓 목록</h2>
               <p>종목을 클릭하여 빠르게 이동합니다.</p>
             </div>
+            <input type="text" id="search-input" class="search-input" placeholder="검색 (한글/영어/코드)" />
             <div id="market-list" class="market-list">로딩 중...</div>
           </aside>
 
@@ -97,12 +101,20 @@ export class App {
   private attachEvents(): void {
     const refreshButton = this.root.querySelector('#refresh-btn') as HTMLButtonElement
     refreshButton?.addEventListener('click', () => this.loadSelectedMarketAnalysis())
+
+    if (this.searchInput) {
+      this.searchInput.addEventListener('input', (e) => {
+        const query = (e.target as HTMLInputElement).value.toLowerCase()
+        this.filterAndRenderMarkets(query)
+      })
+    }
   }
 
   private async loadMarkets(): Promise<void> {
     try {
       this.markets = await fetchMarkets()
       const krwMarkets = this.markets.filter((market) => market.market.startsWith('KRW-'))
+      this.allKrwMarkets = krwMarkets
       if (!krwMarkets.some((market) => market.market === this.selectedMarket)) {
         this.selectedMarket = krwMarkets[0]?.market ?? this.selectedMarket
       }
@@ -127,7 +139,27 @@ export class App {
       .join('')
 
     this.marketList.innerHTML = items
-    this.marketList.querySelectorAll<HTMLButtonElement>('.market-item').forEach((button) => {
+    this.attachMarketClickListeners()
+  }
+
+  private filterAndRenderMarkets(query: string): void {
+    if (query.trim() === '') {
+      this.renderMarketList(this.allKrwMarkets)
+      return
+    }
+
+    const filtered = this.allKrwMarkets.filter((market) => {
+      const marketCodeMatch = market.market.toLowerCase().includes(query)
+      const koreanNameMatch = market.korean_name.toLowerCase().includes(query)
+      const englishNameMatch = market.english_name.toLowerCase().includes(query)
+      return marketCodeMatch || koreanNameMatch || englishNameMatch
+    })
+
+    this.renderMarketList(filtered)
+  }
+
+  private attachMarketClickListeners(): void {
+    this.marketList?.querySelectorAll<HTMLButtonElement>('.market-item').forEach((button) => {
       button.addEventListener('click', () => {
         const market = button.dataset.market
         if (market) {
