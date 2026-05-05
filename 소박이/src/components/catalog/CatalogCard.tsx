@@ -4,23 +4,55 @@ interface CatalogCardProps {
   item: ItemSummary;
 }
 
-const rarityColors: Record<string, string> = {
+const rarityBg: Record<string, string> = {
   common: "#f4f1ff",
   rare: "#dbe7ff",
   epic: "#fde2ff",
   legendary: "#ffe8cc",
 };
 
+const rarityBorder: Record<string, string> = {
+  common: "#c4b5fd",
+  rare: "#93c5fd",
+  epic: "#f0abfc",
+  legendary: "#fcd34d",
+};
+
 export default function CatalogCard({ item }: CatalogCardProps) {
   return (
-    <article style={{ backgroundColor: rarityColors[item.rarity] ?? "#ffffff", borderRadius: 20, padding: 16, boxShadow: "0 10px 20px rgba(111,66,193,0.08)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
-        <div>
-          <p style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>{item.name}</p>
-          <p style={{ margin: "8px 0 0", color: "#5f4b8b" }}>{item.acquired ? "획득 완료" : "미획득"}</p>
+    <article
+      style={{
+        position: "relative",
+        backgroundColor: rarityBg[item.rarity] ?? "#ffffff",
+        border: `2px solid ${rarityBorder[item.rarity] ?? "#e2d9f3"}`,
+        borderRadius: 12,
+        padding: 8,
+        boxShadow: "0 4px 8px rgba(111,66,193,0.08)",
+        textAlign: "center",
+        overflow: "hidden",
+      }}
+    >
+      {item.iconUrl ? (
+        <img src={item.iconUrl} alt={item.name} style={{ width: 40, height: 40, objectFit: "contain", borderRadius: 6 }} />
+      ) : (
+        <div style={{ width: 40, height: 40, margin: "0 auto", borderRadius: 6, backgroundColor: "#e9e3ff" }} />
+      )}
+      <p style={{ margin: "4px 0 0", fontSize: 11, fontWeight: 700, color: "#3d2c8d", wordBreak: "break-all" }}>{item.name}</p>
+      {!item.acquired && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundColor: "rgba(30,20,60,0.55)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 10,
+          }}
+        >
+          <span style={{ fontSize: 20 }}>🔒</span>
         </div>
-        <span style={{ color: "#3d2c8d", fontWeight: 700 }}>{item.rarity}</span>
-      </div>
+      )}
     </article>
   );
 }
