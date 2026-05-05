@@ -16,7 +16,7 @@ export default function CatalogPage() {
       ) : catalog.error || myItems.error ? (
         <p style={{ color: "#b33951" }}>도감 정보를 불러오지 못했습니다.</p>
       ) : (
-        <div style={{ display: "grid", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
           {catalog.data?.map((item) => {
             const owned = myItems.data?.some((ownedItem) => ownedItem.id === item.id) ?? false;
             return <CatalogCard key={item.id} item={{ ...item, acquired: owned }} />;
