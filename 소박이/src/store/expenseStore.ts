@@ -15,7 +15,7 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     set((state) => ({ expenses: [...state.expenses, expense] })),
   getTodayExpenses: () => {
     const todayStr = getLocalDateString(new Date());
-    return get().expenses.filter((e) => e.createdAt.startsWith(todayStr));
+    return get().expenses.filter((e) => getLocalDateString(new Date(e.createdAt)) === todayStr);
   },
   hydrate: (expenses) => set({ expenses }),
 }));
