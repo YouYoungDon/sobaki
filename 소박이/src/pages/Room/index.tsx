@@ -1,9 +1,13 @@
+import { useState } from "react";
+import { Button } from "@toss/tds-mobile";
 import RoomCanvas from "../../components/room/RoomCanvas";
 import SobakLottie from "../../components/sobak/SobakLottie";
+import LedgerModal from "../../components/ledger/LedgerModal";
 import { useRoom } from "../../hooks/useRoom";
 
 export default function RoomPage() {
   const { data: room, isLoading, error } = useRoom();
+  const [modalOpen, setModalOpen] = useState(false);
 
   if (isLoading) {
     return <p style={{ padding: 24, color: "#6a5495" }}>룸 데이터를 불러오는 중입니다...</p>;
@@ -35,6 +39,27 @@ export default function RoomPage() {
         </div>
         <SobakLottie />
       </section>
+
+      <div
+        style={{
+          position: "fixed",
+          bottom: 80,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 100,
+        }}
+      >
+        <Button
+          color="primary"
+          size="large"
+          onClick={() => setModalOpen(true)}
+          htmlStyle={{ borderRadius: 24, paddingInline: 28, boxShadow: "0 4px 16px rgba(61,44,141,0.25)" }}
+        >
+          오늘 기록하기
+        </Button>
+      </div>
+
+      <LedgerModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </main>
   );
 }
