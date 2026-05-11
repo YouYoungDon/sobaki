@@ -4,10 +4,12 @@ import RoomCanvas from "../../components/room/RoomCanvas";
 import SobakLottie from "../../components/sobak/SobakLottie";
 import LedgerModal from "../../components/ledger/LedgerModal";
 import { useRoom } from "../../hooks/useRoom";
+import { useShare } from "../../hooks/useShare";
 
 export default function RoomPage() {
   const { data: room, isLoading, error } = useRoom();
   const [modalOpen, setModalOpen] = useState(false);
+  const { shareRoom, isSharing } = useShare();
 
   if (isLoading) {
     return <p style={{ padding: 24, color: "#6a5495" }}>룸 데이터를 불러오는 중입니다...</p>;
@@ -23,9 +25,34 @@ export default function RoomPage() {
 
   return (
     <main style={{ padding: "20px 16px 120px", color: "#3d2c8d" }}>
-      <section style={{ marginBottom: 20 }}>
-        <h1 style={{ margin: 0, fontSize: 24 }}>{room.title}</h1>
-        <p style={{ margin: "10px 0 0", lineHeight: 1.5 }}>{room.description ?? "내 방을 꾸며보세요."}</p>
+      <section style={{ marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: 24 }}>{room.title}</h1>
+          <p style={{ margin: "10px 0 0", lineHeight: 1.5 }}>{room.description ?? "내 방을 꾸며보세요."}</p>
+        </div>
+        <button
+          type="button"
+          onClick={shareRoom}
+          disabled={isSharing}
+          aria-label="방 공유하기"
+          style={{
+            flexShrink: 0,
+            marginTop: 2,
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            border: "1.5px solid #c4b5f4",
+            background: "#fff",
+            cursor: isSharing ? "default" : "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 17,
+            opacity: isSharing ? 0.5 : 1,
+          }}
+        >
+          🔗
+        </button>
       </section>
 
       <RoomCanvas backgroundUrl={room.backgroundImageUrl} items={room.items} />
