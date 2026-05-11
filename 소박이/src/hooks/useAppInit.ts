@@ -7,10 +7,16 @@ import { useUserStore } from '../store/userStore';
 import { useEmotionStore } from '../store/emotionStore';
 import { Expense, UserState, SobagiEmotion } from '../types';
 
+// Module-level flag: survives component remounts within the same app session.
+// Prevents re-reading Storage every time HomeScreen remounts (e.g. after navigation.reset).
+let appInitialized = false;
+
 export function useAppInit(): boolean {
-  const [isReady, setIsReady] = useState(false);
+  const [isReady, setIsReady] = useState(appInitialized);
 
   useEffect(() => {
+    if (appInitialized) return;
+
     async function init() {
       const [userData, expenses, lastEmotionRaw] = await Promise.all([
         storageService.load<UserState>(STORAGE_KEYS.USER),
@@ -32,6 +38,7 @@ export function useAppInit(): boolean {
         currentMessage: EMOTION_MESSAGES[emotion],
       });
 
+      appInitialized = true;
       setIsReady(true);
     }
     init();

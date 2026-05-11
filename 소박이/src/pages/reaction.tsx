@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
 import { createRoute, useNavigation } from '@granite-js/react-native';
 import { SobagiReaction } from '../components/sobagi/SobagiReaction';
@@ -15,17 +15,17 @@ function SobagiReactionScreen() {
   const currentEmotion = useEmotionStore((s) => s.currentEmotion);
   const currentMessage = useEmotionStore((s) => s.currentMessage);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     navigation.reset({
       index: 0,
       routes: [{ name: '/' }],
     });
-  };
+  }, [navigation]);
 
   useEffect(() => {
     const timer = setTimeout(handleClose, 2500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [handleClose]);
 
   return (
     <Pressable style={styles.container} onPress={handleClose}>
