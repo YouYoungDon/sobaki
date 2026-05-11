@@ -56,7 +56,7 @@ The app centers on a tiny otter character named 소박이 who lives in a warm co
   emotionEngine.evaluate(expense, ctx)    ← pure function, no side effects
        ↓
   emotionStore.setEmotion(emotion, message)
-  userStore.addExp(amount)                ← level / streak / roomStage auto-update
+  userStore.processRecordReward()         ← updates exp / level / streak / roomStage together
        ↓
 [SobagiReactionScreen]  (full-screen transition)
   SobagiCharacter(emotion) + EmotionBubble(message)
@@ -70,6 +70,20 @@ The app centers on a tiny otter character named 소박이 who lives in a warm co
 ---
 
 ## Emotion Engine
+
+### EmotionContext
+
+The `ctx` parameter is explicitly typed to keep `emotionEngine.evaluate` a pure function with no store access.
+
+```ts
+interface EmotionContext {
+  isFirstRecordToday: boolean
+  currentStreak: number
+  currentHour: number       // 0–23, device local time
+}
+```
+
+Callers (RecordScreen or expenseService) are responsible for constructing this context before invoking the engine.
 
 ### Type
 
@@ -143,8 +157,7 @@ interface UserStore {
   streak: number
   totalRecordCount: number
   roomStage: number       // 1–5, derived from totalRecordCount
-  addExp: (amount: number) => void
-  incrementStreak: () => void
+  processRecordReward: () => void  // updates exp, level, streak, roomStage together
 }
 ```
 
@@ -172,6 +185,17 @@ Use `Storage` from `@apps-in-toss/framework`. AsyncStorage is not permitted in A
 |-----|----------|
 | `sobagi-user` | UserState (level, exp, streak, totalRecordCount, roomStage) |
 | `sobagi-expenses` | Expense[] |
+| `sobagi-last-emotion` | Last `SobagiEmotion` string — persisted after every reaction |
+
+### Emotion Persistence on App Launch
+
+On launch, `emotionStore` is initialized as follows:
+
+1. Read `sobagi-last-emotion` from Storage
+2. If a valid `SobagiEmotion` value is found, restore it as `currentEmotion`
+3. Fallback to `'happy'` if the key is missing or invalid
+
+This makes the app feel emotionally continuous — Sobagi remembers how she was feeling when the user left.
 
 ### Error Handling
 
@@ -272,9 +296,11 @@ Navigation pattern:
 
 ### HistoryScreen (`/history`)
 
-- Date-grouped list of `ExpenseCard` items
+- Records grouped by local calendar date (`YYYY-MM-DD`, device local timezone)
+- Each group header shows the date in a warm, diary-like format (e.g. "5월 11일")
 - Each card: category icon + amount + Sobagi emotion of that record
 - Simple, breathable layout — not a financial dashboard
+- Timezone rule: always use device local time to determine the date boundary. Never UTC.
 
 ### StatsScreen (`/stats`)
 
@@ -314,6 +340,8 @@ interface ExpenseCardProps {
 }
 
 // DailySummary
+// Feels like a soft diary note, not a banking dashboard.
+// Keep it small and warm — no large cards, no bold financial styling.
 interface DailySummaryProps {
   totalAmount: number
   recordCount: number
