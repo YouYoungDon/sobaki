@@ -5,7 +5,7 @@ import type { AuthResponse } from "../types/api";
 
 export function useAuth() {
   const [token, setToken] = useState<string | null>(() => getSavedToken());
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(() => !getSavedToken());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

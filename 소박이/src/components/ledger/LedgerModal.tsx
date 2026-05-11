@@ -71,12 +71,10 @@ export default function LedgerModal({ open, onClose }: Props) {
       <div style={{ padding: "4px 20px 16px", display: "flex", flexDirection: "column", gap: 24 }}>
         <TextField
           variant="line"
-          label="금액"
+          label="금액 (원)"
           placeholder="0"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          inputMode="numeric"
-          suffix="원"
         />
 
         <div>

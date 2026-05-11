@@ -14,14 +14,17 @@ export function useLedger(initialYear?: number, initialMonth?: number) {
     }
   }, [year]);
 
-  const ledgerQuery = useQuery<LedgerEntry[]>(["ledger", year, month], () => fetchLedgerEntries(year, month), {
+  const ledgerQuery = useQuery<LedgerEntry[]>({
+    queryKey: ["ledger", year, month],
+    queryFn: () => fetchLedgerEntries(year, month),
     staleTime: 30_000,
     retry: 1,
   });
 
-  const saveMutation = useMutation(saveLedgerEntry, {
+  const saveMutation = useMutation({
+    mutationFn: saveLedgerEntry,
     onSuccess: () => {
-      queryClient.invalidateQueries(["ledger", year, month]);
+      queryClient.invalidateQueries({ queryKey: ["ledger", year, month] });
     },
   });
 
