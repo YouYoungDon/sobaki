@@ -5,7 +5,7 @@ import { defineConfig } from '@granite-js/react-native/config';
 
 export default defineConfig({
   appName: 'sobagi',
-  scheme: 'granite',
+  scheme: 'sobagi',
   plugins: [
     router(),
     hermes(),
