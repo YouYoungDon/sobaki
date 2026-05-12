@@ -10,13 +10,12 @@ export async function saveExpense(expense: Expense): Promise<void> {
   const userStore = useUserStore.getState();
 
   // Streak logic: only update on first record of a new day
-  const todayStr = getLocalDateString(new Date());
   const yesterdayStr = getLocalDateString(new Date(Date.now() - 86400000));
   const todayExpenses = expenseStore.getTodayExpenses();
 
   if (todayExpenses.length === 0) {
-    const yesterdayHadRecord = expenseStore.expenses.some((e) =>
-      e.createdAt.startsWith(yesterdayStr)
+    const yesterdayHadRecord = expenseStore.expenses.some(
+      (e) => getLocalDateString(new Date(e.createdAt)) === yesterdayStr,
     );
     const newStreak = yesterdayHadRecord ? userStore.streak + 1 : 1;
     userStore.setStreak(newStreak);

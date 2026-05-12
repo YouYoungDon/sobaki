@@ -33,15 +33,18 @@ function RecordScreen() {
   const [category, setCategory] = useState<ExpenseCategory>('cafe');
   const [userEmotion, setUserEmotion] = useState<string | undefined>(undefined);
   const [memo, setMemo] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const setEmotion = useEmotionStore((s) => s.setEmotion);
   const getTodayExpenses = useExpenseStore((s) => s.getTodayExpenses);
   const streak = useUserStore((s) => s.streak);
 
   const amount = parseInt(amountText.replace(/,/g, ''), 10) || 0;
-  const canSave = amount > 0;
+  const canSave = amount > 0 && !isSaving;
 
   const handleSave = async () => {
+    if (!canSave) return;
+    setIsSaving(true);
     const ctx: EmotionContext = {
       isFirstRecordToday: getTodayExpenses().length === 0,
       currentStreak: streak,

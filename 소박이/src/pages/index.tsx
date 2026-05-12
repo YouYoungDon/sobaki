@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { createRoute, useNavigation } from '@granite-js/react-native';
 import { RoomBackground } from '../components/room/RoomBackground';
@@ -10,6 +10,7 @@ import { useExpenseStore } from '../store/expenseStore';
 import { useUserStore } from '../store/userStore';
 import { useAppInit } from '../hooks/useAppInit';
 import { BottomTabs } from '../components/common/BottomTabs';
+import { getLocalDateString } from '../utils/date';
 import { COLORS } from '../constants/colors';
 
 export const Route = createRoute('/', {
@@ -23,8 +24,11 @@ function HomeScreen() {
 
   const currentEmotion = useEmotionStore((s) => s.currentEmotion);
   const roomStage = useUserStore((s) => s.roomStage);
-  const getTodayExpenses = useExpenseStore((s) => s.getTodayExpenses);
-  const todayExpenses = getTodayExpenses();
+  const expenses = useExpenseStore((s) => s.expenses);
+  const todayExpenses = useMemo(() => {
+    const todayStr = getLocalDateString(new Date());
+    return expenses.filter((e) => getLocalDateString(new Date(e.createdAt)) === todayStr);
+  }, [expenses]);
   const todayTotal = todayExpenses.reduce((sum, e) => sum + e.amount, 0);
 
   if (!isReady) {
