@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { ExpenseCategory } from '../../types';
 import { COLORS } from '../../constants/colors';
 

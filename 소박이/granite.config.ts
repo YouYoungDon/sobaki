@@ -12,7 +12,7 @@ export default defineConfig({
     appsInToss({
       brand: {
         displayName: '소박이',
-        primaryColor: '#3182F6',
+        primaryColor: '#6B7C4A',
         icon: '',
       },
       permissions: [],

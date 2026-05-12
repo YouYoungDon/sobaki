@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, View, Text, StyleSheet } from 'react-native';
+import { Animated, Text, StyleSheet } from 'react-native';
 import { SobagiEmotion } from '../../types';
 
 const EMOTION_EMOJIS: Record<SobagiEmotion, string> = {
