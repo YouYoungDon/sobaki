@@ -4,7 +4,7 @@ import { defineConfig } from '@granite-js/react-native/config';
 
 export default defineConfig({
   appName: 'pockeksobak',
-  scheme: 'pockeksobak',
+  scheme: 'intoss',
   plugins: [
     router(),
     appsInToss({

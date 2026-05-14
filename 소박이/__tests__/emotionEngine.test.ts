@@ -17,8 +17,8 @@ const baseCtx = (overrides: Partial<EmotionContext> = {}): EmotionContext => ({
 });
 
 describe('emotionEngine.evaluate', () => {
-  it('returns satisfied for first record today (highest priority)', () => {
-    expect(evaluate(baseExpense(100000), baseCtx({ isFirstRecordToday: true }))).toBe('satisfied');
+  it('returns surprised for first record today (highest priority)', () => {
+    expect(evaluate(baseExpense(100000), baseCtx({ isFirstRecordToday: true }))).toBe('surprised');
   });
 
   it('returns excited for streak >= 3 (above late-night and large-spend)', () => {
@@ -29,8 +29,8 @@ describe('emotionEngine.evaluate', () => {
     expect(evaluate(baseExpense(3000), baseCtx({ currentHour: 22 }))).toBe('sleepy');
   });
 
-  it('returns cozy for large spending >= 50000', () => {
-    expect(evaluate(baseExpense(50000), baseCtx())).toBe('cozy');
+  it('returns soft-sad for large spending >= 50000', () => {
+    expect(evaluate(baseExpense(50000), baseCtx())).toBe('soft-sad');
   });
 
   it('returns happy for small spending < 5000', () => {
@@ -43,6 +43,6 @@ describe('emotionEngine.evaluate', () => {
 
   it('first-record-today beats streak (priority 1 > priority 2)', () => {
     const ctx = baseCtx({ isFirstRecordToday: true, currentStreak: 5 });
-    expect(evaluate(baseExpense(1000), ctx)).toBe('satisfied');
+    expect(evaluate(baseExpense(1000), ctx)).toBe('surprised');
   });
 });

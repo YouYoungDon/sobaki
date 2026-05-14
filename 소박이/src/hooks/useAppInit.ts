@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import * as storageService from '../services/storageService';
 import { STORAGE_KEYS } from '../constants/storage';
 import { VALID_EMOTIONS, EMOTION_MESSAGES } from '../constants/emotion';
@@ -7,42 +7,42 @@ import { useUserStore } from '../store/userStore';
 import { useEmotionStore } from '../store/emotionStore';
 import { Expense, UserState, SobagiEmotion } from '../types';
 
-// Module-level flag: survives component remounts within the same app session.
-// Prevents re-reading Storage every time HomeScreen remounts (e.g. after navigation.reset).
 let appInitialized = false;
 
 export function useAppInit(): boolean {
-  const [isReady, setIsReady] = useState(appInitialized);
-
   useEffect(() => {
     if (appInitialized) return;
+    appInitialized = true;
 
-    async function init() {
-      const [userData, expenses, lastEmotionRaw] = await Promise.all([
-        storageService.load<UserState>(STORAGE_KEYS.USER),
-        storageService.load<Expense[]>(STORAGE_KEYS.EXPENSES),
-        storageService.load<string>(STORAGE_KEYS.LAST_EMOTION),
-      ]);
+    // Load stored data in background — does not block rendering
+    async function loadStored() {
+      try {
+        const [userData, expenses, lastEmotionRaw] = await Promise.all([
+          storageService.load<UserState>(STORAGE_KEYS.USER),
+          storageService.load<Expense[]>(STORAGE_KEYS.EXPENSES),
+          storageService.load<string>(STORAGE_KEYS.LAST_EMOTION),
+        ]);
 
-      if (userData) useUserStore.getState().hydrate(userData);
-      if (expenses) useExpenseStore.getState().hydrate(expenses);
+        if (userData) useUserStore.getState().hydrate(userData);
+        if (expenses) useExpenseStore.getState().hydrate(expenses);
 
-      const emotion: SobagiEmotion =
-        lastEmotionRaw != null && VALID_EMOTIONS.includes(lastEmotionRaw as SobagiEmotion)
-          ? (lastEmotionRaw as SobagiEmotion)
-          : 'happy';
+        const emotion: SobagiEmotion =
+          lastEmotionRaw != null && VALID_EMOTIONS.includes(lastEmotionRaw as SobagiEmotion)
+            ? (lastEmotionRaw as SobagiEmotion)
+            : 'happy';
 
-      // Set emotion without triggering Storage persist (it's already from storage)
-      useEmotionStore.setState({
-        currentEmotion: emotion,
-        currentMessage: EMOTION_MESSAGES[emotion],
-      });
-
-      appInitialized = true;
-      setIsReady(true);
+        useEmotionStore.setState({
+          currentEmotion: emotion,
+          currentMessage: EMOTION_MESSAGES[emotion],
+        });
+      } catch {
+        // Storage unavailable in sandbox — use default state
+      }
     }
-    init();
+
+    loadStored();
   }, []);
 
-  return isReady;
+  // Always ready immediately — no loading gate
+  return true;
 }

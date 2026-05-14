@@ -11,8 +11,8 @@ const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   other: '📦 기타',
 };
 
-const EMOTION_EMOJIS = {
-  happy: '😊', excited: '🌟', cozy: '🍵', sleepy: '😴', satisfied: '🌿',
+const EMOTION_EMOJIS: Record<string, string> = {
+  happy: '😊', excited: '✨', surprised: '😮', sleepy: '😴', 'soft-sad': '🌧️',
 };
 
 interface ExpenseCardProps {

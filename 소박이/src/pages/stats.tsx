@@ -10,6 +10,7 @@ import { ExpenseCategory } from '../types';
 import { COLORS } from '../constants/colors';
 import { getLocalDateString } from '../utils/date';
 import { BottomTabs } from '../components/common/BottomTabs';
+import { SOBAGI_IMAGE_URIS } from '../constants/assets';
 
 export const Route = createRoute('/stats', {
   validateParams: (params) => params,
@@ -53,9 +54,14 @@ function StatsScreen() {
 
   return (
     <View style={styles.screen}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>소소한 기록</Text>
+        <Text style={styles.headerSub}>이번 주를 돌아봐요</Text>
+      </View>
+
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.sobagiRow}>
-          <SobagiCharacter emotion={currentEmotion} size="small" />
+          <SobagiCharacter emotion={currentEmotion} size="small" imageUri={SOBAGI_IMAGE_URIS[currentEmotion]} />
           <View style={styles.bubbleWrap}>
             <EmotionBubble message={statsComment} />
           </View>
@@ -78,15 +84,31 @@ function StatsScreen() {
           <Text style={styles.cardValue}>{streak}일 🔥</Text>
         </View>
       </ScrollView>
-      <BottomTabs />
+      <BottomTabs activeRoute="/stats" />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.cream },
+  header: {
+    paddingTop: 56,
+    paddingHorizontal: 24,
+    paddingBottom: 12,
+    backgroundColor: COLORS.cream,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  headerSub: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+  },
   container: { flex: 1 },
-  content: { padding: 24, gap: 16 },
+  content: { paddingTop: 8, paddingHorizontal: 24, paddingBottom: 24, gap: 16 },
   sobagiRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',

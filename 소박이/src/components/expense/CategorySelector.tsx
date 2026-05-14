@@ -40,18 +40,34 @@ export function CategorySelector({ selected, onSelect }: CategorySelectorProps) 
 }
 
 const styles = StyleSheet.create({
-  row: { paddingHorizontal: 16, gap: 8, paddingVertical: 4 },
+  row: {
+    gap: 8,
+    paddingVertical: 2,
+  },
   chip: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 16,
     backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
-  chipSelected: { backgroundColor: COLORS.oliveGreen },
-  emoji: { fontSize: 16 },
-  label: { fontSize: 14, color: COLORS.text },
-  labelSelected: { color: '#fff' },
+  chipSelected: {
+    backgroundColor: COLORS.oliveGreen,
+    borderColor: COLORS.oliveDark,
+  },
+  emoji: {
+    fontSize: 20,
+  },
+  label: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    fontWeight: '500',
+  },
+  labelSelected: {
+    color: '#fff',
+  },
 });

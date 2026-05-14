@@ -1,4 +1,4 @@
-export type SobagiEmotion = 'happy' | 'excited' | 'cozy' | 'sleepy' | 'satisfied';
+export type SobagiEmotion = 'happy' | 'excited' | 'surprised' | 'sleepy' | 'soft-sad';
 
 export type ExpenseCategory = 'cafe' | 'food' | 'transport' | 'shopping' | 'other';
 

@@ -7,14 +7,15 @@ import { SobagiEmotion } from '../../types';
 interface SobagiReactionProps {
   emotion: SobagiEmotion;
   message: string;
+  imageUri?: string;
 }
 
-export function SobagiReaction({ emotion, message }: SobagiReactionProps) {
+export function SobagiReaction({ emotion, message, imageUri }: SobagiReactionProps) {
   return (
     <View style={styles.container}>
       <EmotionBubble message={message} />
       <View style={styles.gap} />
-      <SobagiCharacter emotion={emotion} size="large" />
+      <SobagiCharacter emotion={emotion} size="large" showOverlay imageUri={imageUri} />
     </View>
   );
 }
